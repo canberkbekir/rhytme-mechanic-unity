@@ -1,47 +1,54 @@
 using System;
+using Base;
 using Managers;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening; 
+using DG.Tweening;
+using UnityEngine.Serialization;
 
 namespace UI
 {
     public class UIBeatController : MonoBehaviour
     {
+        [Header("References")]
         [SerializeField] private Image beatImage;
-         [SerializeField] private float beatFadeTargetAlpha = 0.5f; // Target alpha value for the heartbeat effect
+        
+        [Header("Animation Settings")]
+        [SerializeField] private float beatScaleUp = 1.2f;  
+        [SerializeField] private Ease easeType = Ease.Linear;
 
         private BeatManager _beatManager;
         private float _beatInterval;
 
         private void OnEnable()
         {
-            BeatManager.OnBeat += HandleOnBeat;
+            _beatManager.OnBeat += HandleOnBeat;
         }
 
         private void OnDisable()
         {
-            BeatManager.OnBeat -= HandleOnBeat;
+            _beatManager.OnBeat -= HandleOnBeat;
         } 
 
-        private void Start()
+        private void Awake()
         {
             _beatManager = GameManager.Instance.BeatManager;
             _beatInterval = _beatManager.SPB; // Seconds Per Beat
+            
+            beatImage.rectTransform.localScale = Vector3.one * beatScaleUp;
+
         }
 
         private void HandleOnBeat()
         {
-            _beatInterval = GameManager.Instance.BeatManager.SPB;
-
-            // Animate the opacity like a heartbeat
-            // 1. Reset to full alpha
-            beatImage.DOFade(1f, _beatInterval/2)
+            _beatInterval = _beatManager.SPB; 
+ 
+            beatImage.rectTransform.DOScale(1, _beatInterval / 2).SetEase(easeType)
                 .OnComplete(() =>
                 {
-                    // 2. Fade back to a lower alpha value to simulate the heartbeat effect
-                    beatImage.DOFade(beatFadeTargetAlpha, _beatInterval/2); // Scale duration with beat interval
+                    beatImage.rectTransform.DOScale(beatScaleUp, _beatInterval / 2);
                 });
-        }
+        } 
+
     }
 }
