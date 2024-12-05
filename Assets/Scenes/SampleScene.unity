@@ -1497,6 +1497,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1643582738}
+    - target: {fileID: 3994945207177044051, guid: 1ae80089fa6b5cb428ff5c152d8e230d, type: 3}
+      propertyPath: inputTolerancePercentage
+      value: 0.35
+      objectReference: {fileID: 0}
     - target: {fileID: 5649945962315030324, guid: 1ae80089fa6b5cb428ff5c152d8e230d, type: 3}
       propertyPath: m_Name
       value: Managers

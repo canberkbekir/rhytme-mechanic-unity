@@ -1,6 +1,6 @@
 using System;
 using Managers;
-using UnityEngine;
+using UnityEngine; 
 
 namespace Base
 { 
@@ -15,8 +15,8 @@ namespace Base
         // Event for input feedback
         public event Action<InputFeedbackType> OnInputFeedback; // Feedback messages: Perfect, Early, Late, Miss
 
-        [SerializeField, Tooltip("Allowed time window (seconds) for early/late input")] 
-        private float inputTolerance = 0.1f;
+        [SerializeField, Tooltip("Allowed time window (seconds) for early/late input percentage")] 
+        private float inputTolerancePercentage = 0.1f;
         
         private BeatManager _beatManager;
         private MovementHandler _movementHandler;
@@ -80,22 +80,17 @@ namespace Base
 
             var timeDifference = _nextBeatTime - inputTime;
 
-            if (Mathf.Abs(timeDifference) <= inputTolerance)
-            {
-                // Player input is within the tolerance window
-                OnInputFeedback?.Invoke(InputFeedbackType.Perfect);
-            } 
-            else
-            {
+            // Player input is within the tolerance window
+            OnInputFeedback?.Invoke(Mathf.Abs(timeDifference) <= inputTolerancePercentage * _beatInterval
+                ? InputFeedbackType.Perfect
                 // Player input missed completely
-                OnInputFeedback?.Invoke(InputFeedbackType.Miss);
-            }
+                : InputFeedbackType.Miss);
         }
 
 
         public void SetInputTolerance(float tolerance)
         {
-            inputTolerance = Mathf.Max(0, tolerance); 
+            inputTolerancePercentage = Mathf.Max(0, tolerance); 
         }
     }
 }
