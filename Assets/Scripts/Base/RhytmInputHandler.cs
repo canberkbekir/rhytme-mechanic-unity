@@ -1,96 +1,114 @@
 using System;
 using Managers;
-using UnityEngine; 
+using UnityEngine;
 
 namespace Base
-{ 
+{
     public enum InputFeedbackType
     {
-        Perfect, 
+        Perfect,
         Miss
     }
-    
+
     public class RhythmInputHandler : MonoBehaviour
     {
-        // Event for input feedback
-        public event Action<InputFeedbackType> OnInputFeedback; // Feedback messages: Perfect, Early, Late, Miss
+        // Public event for input feedback
+        public event Action<InputFeedbackType> OnInputFeedback;
 
-        [SerializeField, Tooltip("Allowed time window (seconds) for early/late input percentage")] 
+        [SerializeField, Tooltip("Allowed time window (percentage of beat interval) for early/late input")] 
         private float inputTolerancePercentage = 0.1f;
-        
+
         private BeatManager _beatManager;
         private MovementHandler _movementHandler;
-        
 
-        private float _lastBeatTime;    // Tracks the time of the last beat
-        private float _nextBeatTime;    // Tracks the time of the next beat
+        private float _nextBeatTime;    // Time of the next beat
         private float _beatInterval;   // Duration between beats
-        private bool _hasBeatStarted;  // Flag to check if a beat cycle has started
+        private bool _inputProcessed;  // Flag to track if input is already processed for the current beat
 
         private void OnEnable()
         {
-            _beatManager.OnBeat += HandleOnBeat;
+            if (_beatManager != null)
+                _beatManager.OnBeat += HandleOnBeat;
         }
 
         private void OnDisable()
         {
-            _beatManager.OnBeat -= HandleOnBeat;
+            if (_beatManager != null)
+                _beatManager.OnBeat -= HandleOnBeat;
         }
-        
+
         private void Awake()
         {
-            _beatManager = GameManager.Instance.BeatManager;
-            _movementHandler = GameManager.Instance.Player.MovementHandler;
+            _beatManager = GameManager.Instance?.BeatManager;
+            _movementHandler = GameManager.Instance?.Player?.MovementHandler;
+
+            if (_beatManager == null || _movementHandler == null)
+            {
+                Debug.LogError("Required components are missing. Please ensure GameManager is properly set up.");
+            }
         }
 
         private void Update()
         {
-            // Example input detection (Space key for testing)
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                ValidateInput(Time.time);
-            }else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                Debug.Log("Right Arrow");
-                _movementHandler.MoveRight();
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                _movementHandler.MoveLeft();
-            }
-            
-                
+            if (_inputProcessed) return;
+
+            HandlePlayerInput();
         }
 
         private void HandleOnBeat()
         {
-            _beatInterval = GameManager.Instance.BeatManager.SPB; 
-            _lastBeatTime = Time.time;
-            _nextBeatTime = _lastBeatTime + _beatInterval;
-            _hasBeatStarted = true;
+            _beatInterval = _beatManager.SPB; // Seconds per beat
+            _nextBeatTime = Time.time + _beatInterval;
+            _inputProcessed = false; // Allow input for the new beat
         }
 
-        private void ValidateInput(float inputTime)
+        private void HandlePlayerInput()
         {
-            if (!_hasBeatStarted)
-            { 
-                OnInputFeedback?.Invoke(InputFeedbackType.Miss);
-                return;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                ProcessInput(Time.time);
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                if (ProcessInput(Time.time))
+                {
+                    _movementHandler.MoveRight();
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                if (ProcessInput(Time.time))
+                {
+                    _movementHandler.MoveLeft();
+                }
+            }
+        }
+
+        private bool ProcessInput(float inputTime)
+        {
+            _inputProcessed = true; // Block further input for this beat
+
+            if (IsInputInTolerance(inputTime))
+            {
+                OnInputFeedback?.Invoke(InputFeedbackType.Perfect);
+                return true;
             }
 
-            var timeDifference = _nextBeatTime - inputTime;
-
-            // Player input is within the tolerance window
-            OnInputFeedback?.Invoke(Mathf.Abs(timeDifference) <= inputTolerancePercentage * _beatInterval
-                ? InputFeedbackType.Perfect
-                // Player input missed completely
-                : InputFeedbackType.Miss);
+            OnInputFeedback?.Invoke(InputFeedbackType.Miss);
+            return false;
         }
 
+        private bool IsInputInTolerance(float inputTime)
+        {
+            if (_beatInterval <= 0) return false;
+
+            var timeDifference = Mathf.Abs(_nextBeatTime - inputTime);
+            return timeDifference <= inputTolerancePercentage * _beatInterval;
+        }
 
         public void SetInputTolerance(float tolerance)
         {
-            inputTolerancePercentage = Mathf.Max(0, tolerance); 
+            inputTolerancePercentage = Mathf.Max(0, tolerance);
         }
     }
 }
