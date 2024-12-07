@@ -82,6 +82,13 @@ namespace Base
                     _movementHandler.MoveLeft();
                 }
             }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (ProcessInput(Time.time))
+                {
+                    _movementHandler.MoveAttack();
+                }
+            }
         }
 
         private bool ProcessInput(float inputTime)

@@ -11,7 +11,7 @@ namespace Managers
      
         [SerializeField] private BeatManager beatManager;
         [SerializeField] private RhythmInputHandler rhythmInputHandler;
-         [SerializeField] private PlayerManager player;
+        [SerializeField] private PlayerManager player;
         public BeatManager BeatManager => beatManager;
         public RhythmInputHandler RhythmInputHandler => rhythmInputHandler;
          public PlayerManager Player => player;

@@ -1,7 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 using Managers;
-using Player; // Make sure to include DOTween
+using Player;
 
 namespace Base
 {
@@ -9,64 +9,101 @@ namespace Base
     {
         [Header("Settings")]
         [SerializeField] private int startWaypointIndex = 1;
-        [SerializeField] private float changeWaypointTime = 0.3f; // Time to reach the next waypoint
-        [SerializeField] private float heightOffset = 0.5f; // Height of the arc during the movement
-        
-        [Header("Debug")]
-        [SerializeField] private int _currentWaypointIndex;
-        
+        [SerializeField] private float changeWaypointTime = 0.3f;
+        [SerializeField] private float heightOffset = 0.5f;
+        [SerializeField] private float attackOffset = 3f;
+
         [Header("References")]
-        [SerializeField] private Transform[] waypoints; // Array of waypoints 
-        
+        [SerializeField] private Transform[] waypoints;
+
+        [Header("Debug")]
+        [SerializeField] private int currentWaypointIndex;
+
         private PlayerManager _player;
+
         private void Awake()
-        { 
+        {
             _player = GameManager.Instance.Player;
-            
-            // Set the initial position to the starting waypoint
-            _currentWaypointIndex = startWaypointIndex;
-            transform.position = waypoints[_currentWaypointIndex].position;
-            
+
+            if (_player == null)
+            {
+                Debug.LogError("PlayerManager is not set up in GameManager!");
+                return;
+            }
+
+            currentWaypointIndex = startWaypointIndex;
+            transform.position = waypoints[currentWaypointIndex].position;
         }
 
         public void MoveRight()
         {
-            if (_currentWaypointIndex < waypoints.Length - 1)
+            if (currentWaypointIndex < waypoints.Length - 1)
             {
-                _currentWaypointIndex++;
-                // Call the animation method to move to the next waypoint
-                MoveTransformAnimation(waypoints[_currentWaypointIndex]);
+                MoveToWaypoint(++currentWaypointIndex);
             }
         }
-        
+
         public void MoveLeft()
         {
-            if (_currentWaypointIndex > 0)
+            if (currentWaypointIndex > 0)
             {
-                _currentWaypointIndex--;
-                // Call the animation method to move to the previous waypoint
-                MoveTransformAnimation(waypoints[_currentWaypointIndex]);
+                MoveToWaypoint(--currentWaypointIndex);
             }
         }
-        
-        private void MoveTransformAnimation(Transform targetTransform)
+
+        public void MoveAttack()
         {
-            // Get the current position and the target position
+            PerformAttackAnimation();
+        }
+
+        private void MoveToWaypoint(int waypointIndex)
+        {
+            if (waypointIndex < 0 || waypointIndex >= waypoints.Length) return;
+            AnimateMovement(waypoints[waypointIndex].position);
+        }
+
+        private void AnimateMovement(Vector3 targetPosition)
+        {
             var startPosition = _player.transform.position;
-            var targetPosition = targetTransform.position;
+            var arcPeak = CalculateArcPeak(startPosition, targetPosition);
 
-            // Calculate the middle position for the arc (parabolic movement)
-            var arcPeak = new Vector3(
-                (startPosition.x + targetPosition.x) / 2, // Middle point on X
-                Mathf.Max(startPosition.y, targetPosition.y) + heightOffset, // Higher point on Y
-                (startPosition.z + targetPosition.z) / 2  // Middle point on Z
+            DOTween.Sequence()
+                .Append(_player.transform.DOPath(
+                    new[] { startPosition, arcPeak, targetPosition },
+                    changeWaypointTime,
+                    PathType.CatmullRom
+                ).SetEase(Ease.OutQuad));
+        }
+
+        private void PerformAttackAnimation()
+        {
+            var startPosition = _player.transform.position;
+            var targetPosition = startPosition + _player.transform.forward * -attackOffset;
+
+            var forwardArcPeak = CalculateArcPeak(startPosition, targetPosition);
+            var returnArcPeak = CalculateArcPeak(targetPosition, startPosition);
+
+            DOTween.Sequence()
+                .Append(_player.transform.DOPath(
+                    new[] { startPosition, forwardArcPeak, targetPosition },
+                    changeWaypointTime / 2,
+                    PathType.CatmullRom
+                ).SetEase(Ease.OutQuad))
+                .Append(_player.transform.DOPath(
+                    new[] { targetPosition, returnArcPeak, startPosition },
+                    changeWaypointTime / 2,
+                    PathType.CatmullRom
+                ).SetEase(Ease.InQuad))
+                .OnComplete(() => Debug.Log("Attack animation complete"));
+        }
+
+        private Vector3 CalculateArcPeak(Vector3 start, Vector3 target)
+        {
+            return new Vector3(
+                (start.x + target.x) / 2,
+                Mathf.Max(start.y, target.y) + heightOffset,
+                (start.z + target.z) / 2
             );
-
-            // Use DOTween to create the arc-like motion
-            var moveSequence = DOTween.Sequence();
-
-            moveSequence.Append(_player.transform.DOPath(new[] { startPosition, arcPeak, targetPosition }, changeWaypointTime, PathType.CatmullRom)
-                .SetEase(Ease.OutQuad));
         }
     }
 }
