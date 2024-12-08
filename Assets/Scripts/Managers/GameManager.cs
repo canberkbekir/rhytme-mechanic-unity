@@ -12,9 +12,11 @@ namespace Managers
         [SerializeField] private BeatManager beatManager;
         [SerializeField] private RhythmInputHandler rhythmInputHandler;
         [SerializeField] private PlayerManager player;
+        [SerializeField] private CombatManager combatManager;
         public BeatManager BeatManager => beatManager;
         public RhythmInputHandler RhythmInputHandler => rhythmInputHandler;
          public PlayerManager Player => player;
+        public CombatManager CombatManager => combatManager;
         
         private void Awake()
         {

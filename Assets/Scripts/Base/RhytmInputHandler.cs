@@ -1,5 +1,6 @@
 using System;
 using Managers;
+using Player;
 using UnityEngine;
 
 namespace Base
@@ -20,7 +21,9 @@ namespace Base
 
         private BeatManager _beatManager;
         private MovementHandler _movementHandler;
-
+        private PlayerHandler _playerHandler;
+        private CombatManager _combatManager;
+        
         private float _nextBeatTime;    // Time of the next beat
         private float _beatInterval;   // Duration between beats
         private bool _inputProcessed;  // Flag to track if input is already processed for the current beat
@@ -41,6 +44,8 @@ namespace Base
         {
             _beatManager = GameManager.Instance?.BeatManager;
             _movementHandler = GameManager.Instance?.Player?.MovementHandler;
+            _playerHandler = GameManager.Instance?.Player?.PlayerHandler;
+            _combatManager = GameManager.Instance?.CombatManager;
 
             if (_beatManager == null || _movementHandler == null)
             {
@@ -86,6 +91,7 @@ namespace Base
             {
                 if (ProcessInput(Time.time))
                 {
+                    _playerHandler.Attack(_combatManager.GetCurrentEnemy());
                     _movementHandler.MoveAttack();
                 }
             }

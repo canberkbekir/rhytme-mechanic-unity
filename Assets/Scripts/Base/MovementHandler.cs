@@ -1,3 +1,5 @@
+using System;
+using Combats.Base;
 using UnityEngine;
 using DG.Tweening;
 using Managers;
@@ -6,7 +8,10 @@ using Player;
 namespace Base
 {
     public class MovementHandler : MonoBehaviour
-    {
+    { 
+        //Public events
+        public event Action<int> OnWaypointChanged; 
+        
         [Header("Settings")]
         [SerializeField] private int startWaypointIndex = 1;
         [SerializeField] private float changeWaypointTime = 0.3f;
@@ -14,12 +19,15 @@ namespace Base
         [SerializeField] private float attackOffset = 3f;
 
         [Header("References")]
-        [SerializeField] private Transform[] waypoints;
+        [SerializeField] private CombatPosition[] waypoints;
 
         [Header("Debug")]
         [SerializeField] private int currentWaypointIndex;
 
         private PlayerManager _player;
+        
+        //Public Variables
+        public int CurrentWaypointIndex => currentWaypointIndex;
 
         private void Awake()
         {
@@ -32,7 +40,7 @@ namespace Base
             }
 
             currentWaypointIndex = startWaypointIndex;
-            transform.position = waypoints[currentWaypointIndex].position;
+            transform.position = waypoints[currentWaypointIndex].transform.position;
         }
 
         public void MoveRight()
@@ -59,7 +67,8 @@ namespace Base
         private void MoveToWaypoint(int waypointIndex)
         {
             if (waypointIndex < 0 || waypointIndex >= waypoints.Length) return;
-            AnimateMovement(waypoints[waypointIndex].position);
+            OnWaypointChanged?.Invoke(waypointIndex);
+            AnimateMovement(waypoints[waypointIndex].transform.position);
         }
 
         private void AnimateMovement(Vector3 targetPosition)

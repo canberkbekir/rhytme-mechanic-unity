@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace Characters.Enemies.Base
 {
-    public class Enemy : Character
+    public abstract class Enemy : Character
     {
         public int attackPower;
+        public int occupiedPositionCount = 1;
 
         protected override void Start()
         {
@@ -25,7 +26,7 @@ namespace Characters.Enemies.Base
             Destroy(gameObject); // Destroy the enemy GameObject on death
         }
 
-        public override void Heal(int amount)
+        public override void Heal(float amount)
         {
             Debug.Log($"{gameObject.name} cannot heal!");
         }
