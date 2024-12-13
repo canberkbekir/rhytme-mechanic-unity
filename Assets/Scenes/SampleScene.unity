@@ -798,6 +798,18 @@ MonoBehaviour:
   animationDuration: 0.5
   shakeStrength: 0.2
   shakeVibrato: 10
+--- !u!114 &1388506781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388506776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f91bd2cc27e22fa41b891c8f647caa2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1437459085
 GameObject:
   m_ObjectHideFlags: 0
@@ -1692,6 +1704,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4928067154377747167, guid: 608389d76bbb9c84287fe6a8bf5511dc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1388506780}
+    - targetCorrespondingSourceObject: {fileID: 4928067154377747167, guid: 608389d76bbb9c84287fe6a8bf5511dc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1388506781}
   m_SourcePrefab: {fileID: 100100000, guid: 608389d76bbb9c84287fe6a8bf5511dc, type: 3}
 --- !u!1001 &3324157311519468624
 PrefabInstance:

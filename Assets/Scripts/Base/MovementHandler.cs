@@ -28,6 +28,7 @@ namespace Base
         
         //Public Variables
         public int CurrentWaypointIndex => currentWaypointIndex;
+        public CombatPosition[] Waypoints => waypoints;
 
         private void Awake()
         {
