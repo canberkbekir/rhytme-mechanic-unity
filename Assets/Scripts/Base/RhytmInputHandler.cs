@@ -27,6 +27,9 @@ namespace Base
         private float _nextBeatTime;    // Time of the next beat
         private float _beatInterval;   // Duration between beats
         private bool _inputProcessed;  // Flag to track if input is already processed for the current beat
+        
+        public float InputTolerancePercentage => inputTolerancePercentage;
+        public float InputTolerance => inputTolerancePercentage * _beatInterval;
 
         private void OnEnable()
         {
@@ -92,7 +95,7 @@ namespace Base
                 if (ProcessInput(Time.time))
                 {
                     _playerHandler.Attack(_combatManager.GetCurrentEnemy());
-                    _movementHandler.MoveAttack();
+                    _movementHandler.PerformAttack();
                 }
             }
         }
