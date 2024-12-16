@@ -23,7 +23,8 @@ namespace UI
         [Header("Animation Settings")]
         [SerializeField] private float beatScaleUp = 1.2f;
         [SerializeField] private Ease easeType = Ease.Linear;
-        [SerializeField] private bool animateCenter = false;
+        [SerializeField] private bool animateCenter = true;
+        [SerializeField] private bool animateArrows = false;
 
         private BeatManager _beatManager;
         private float _beatInterval;
@@ -66,6 +67,7 @@ namespace UI
 
         private void SpawnAndAnimateArrows()
         {
+            if (!animateArrows) return;
             AnimateArrow(CreateArrow(leftArrowParent, -_currentArrowIndex * arrowSpacing), true);
             AnimateArrow(CreateArrow(rightArrowParent, _currentArrowIndex * arrowSpacing), false);
             _currentArrowIndex++;
