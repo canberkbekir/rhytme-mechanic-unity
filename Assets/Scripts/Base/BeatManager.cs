@@ -1,114 +1,155 @@
 using System;
+using Beats.Base;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Base
 {
     public class BeatManager : MonoBehaviour
     {
         // Events for beat synchronization
-        public  event Action OnBeat;              // Fired on every beat
-        public  event Action<int> OnBeatCount;    // Includes the beat count since the start
+        public event Action OnBeat;             // Fired on every beat
+        public event Action<int> OnBeatCount;   // Includes the beat count since the start
 
-        // Beat timing configuration
-        [FormerlySerializedAs("beatInterval")] [SerializeField, Tooltip("Time in seconds between beats")] 
-        private float spb = 0.5f;
+        [Header("Beat Manager Settings")]
+        [SerializeField, Tooltip("The Song Map to process beats from")]
+        private SongMap songMap;
 
-        [SerializeField, Tooltip("Optional: AudioSource for beat synchronization")] 
-        private AudioSource audioSource;
-
-        private float _beatTimer;        // Tracks time since the last beat
-        private int _beatCount;          // Total number of beats since start
-        private bool _isRunning = true;  // Allows pausing the beat manager
+        private float _currentSPB;       // Seconds per beat
+        private float _beatTimer;        // Accumulated time for the current beat
+        private int _beatCount;          // Total beats in current BeatMap
+        private int _currentBeatMapIndex;
+        private bool _isRunning;         // Tracks whether the beat manager is active
 
 
         #region Public Properties
-        /// <summary>
-        ///  Seconds per beat (SPB) - the time interval between beats.
-        /// </summary>
-        public float SPB
-        {
-            get => spb;
-            set
-            {
-                if (!(value > 0)) return;
-                spb = value;
-                SyncToAudio(); // Re-sync if interval changes
-            }
-        } 
-    
-        /// <summary>
-        ///  Beats per minute (BPM) - the number of beats in a minute.
-        /// </summary>
-        public float BPM => 60 / SPB; 
-
-        public bool IsRunning => _isRunning;
-
-        #endregion 
-
+        public float SPB => _currentSPB; 
+        public int BeatCount => _beatCount; 
+        
+        #endregion
         private void Start()
         {
-            if (audioSource != null && audioSource.isPlaying)
-            {
-                SyncToAudio();
-            } 
-            OnBeat?.Invoke(); 
+            if (!ValidateSongMap()) return;
+
+            Initialize();
+            Debug.Log("BeatManager initialized successfully.");
         }
 
         private void Update()
         {
             if (!_isRunning) return;
 
-            UpdateBeatTimer(Time.deltaTime);
+            UpdateBeatTimer();
         }
 
-        private void UpdateBeatTimer(float deltaTime)
-        {
-            _beatTimer += deltaTime;
+        #region Initialization and Validation
 
-            while (_beatTimer >= spb)
+        private bool ValidateSongMap()
+        {
+            if (songMap == null || songMap.beats.Length == 0)
             {
-                _beatTimer -= spb;
+                Debug.LogError("No SongMap assigned or it has no BeatMaps!");
+                return false;
+            }
+            return true;
+        }
+
+        private void Initialize()
+        {
+            _isRunning = true;
+            _currentBeatMapIndex = 0;
+            LoadCurrentBeatMap();
+        }
+
+        #endregion
+
+        #region Timer and Beat Updates
+
+        private void UpdateBeatTimer()
+        {
+            _beatTimer += Time.deltaTime;
+
+            while (_beatTimer >= _currentSPB)
+            {
+                _beatTimer -= _currentSPB;
                 TriggerBeat();
+
+                if (_beatCount >= GetCurrentBeatMap().BeatCount)
+                {
+                    LoadNextBeatMap();
+                }
             }
         }
 
         private void TriggerBeat()
         {
-            _beatCount++; 
+            _beatCount++;
             OnBeat?.Invoke();
             OnBeatCount?.Invoke(_beatCount);
+
+            Debug.Log($"Beat {_beatCount}");
         }
 
-        private void SyncToAudio()
+        #endregion
+
+        #region BeatMap Handling
+
+        private void LoadCurrentBeatMap()
         {
-            if (audioSource != null)
+            var beatMap = GetCurrentBeatMap();
+            _currentSPB = beatMap.BeatInterval;
+            _beatCount = 0;
+            _beatTimer = 0;
+
+            Debug.Log($"Loaded BeatMap {_currentBeatMapIndex + 1}: {beatMap.BeatCount} beats at {_currentSPB} seconds per beat");
+        }
+
+        private void LoadNextBeatMap()
+        {
+            _currentBeatMapIndex++;
+
+            if (_currentBeatMapIndex < songMap.beats.Length)
             {
-                _beatTimer = audioSource.time % spb;
+                LoadCurrentBeatMap();
+            }
+            else
+            {
+                FinishSong();
             }
         }
+
+        private BeatMap GetCurrentBeatMap() => songMap.beats[_currentBeatMapIndex];
+
+        private void FinishSong()
+        {
+            _isRunning = false;
+            Debug.Log("Song finished!");
+        }
+
+        #endregion
+
+        #region Public Controls
 
         public void PauseBeats()
         {
             _isRunning = false;
+            Debug.Log("Beats paused.");
         }
 
         public void ResumeBeats()
         {
-            _isRunning = true;
+            if (!_isRunning)
+            {
+                _isRunning = true;
+                Debug.Log("Beats resumed.");
+            }
         }
 
         public void ResetBeats()
         {
-            _beatTimer = 0;
-            _beatCount = 0;
-            Debug.Log("Beats reset");
+            Initialize();
+            Debug.Log("Beats reset.");
         }
 
-        public void SyncToAudioSource(AudioSource newAudioSource)
-        {
-            audioSource = newAudioSource;
-            SyncToAudio();
-        }
+        #endregion
     }
 }

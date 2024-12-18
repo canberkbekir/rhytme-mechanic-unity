@@ -603,17 +603,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 717281156}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &811669626 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4126166575826736081, guid: 908b47a5d5a71b84ea5615013fb2fbb3, type: 3}
-  m_PrefabInstance: {fileID: 3324157311519468624}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,17 +847,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36d4d280901b6044f98be1ea1b3f7c79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beatImage: {fileID: 811669626}
-  beatPoolManager: {fileID: 1151462027}
-  leftArrowParent: {fileID: 877295263}
-  rightArrowParent: {fileID: 2044486638}
-  centerTransform: {fileID: 109843059}
-  arrowCount: 5
-  arrowSpacing: 20
-  arrowMergeDistance: 50
-  beatScaleUp: 1.2
-  easeType: 17
-  animateCenter: 0
+  beatImage: {fileID: 0}
+  leftBeatSpawnPoint: {fileID: 0}
+  beatCount: 10
 --- !u!114 &1151462027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1853,6 +1834,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Managers
       objectReference: {fileID: 0}
+    - target: {fileID: 6172627999305331391, guid: 1ae80089fa6b5cb428ff5c152d8e230d, type: 3}
+      propertyPath: songMap
+      value: 
+      objectReference: {fileID: 11400000, guid: 4cfd1506695f8b84594f161d65b42467, type: 2}
     - target: {fileID: 6382270312066291677, guid: 1ae80089fa6b5cb428ff5c152d8e230d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -36.799477
