@@ -147,7 +147,7 @@ GameObject:
   - component: {fileID: 4115869495660739104}
   - component: {fileID: 5402943569677476902}
   - component: {fileID: 4126166575826736081}
-  - component: {fileID: 4482037820237945874}
+  - component: {fileID: 4089763944751999869}
   - component: {fileID: 6883291628735403633}
   m_Layer: 5
   m_Name: BeatImage
@@ -204,7 +204,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: c181aa324c844a14bbf97e68848fb7e2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 86a1063ee0ae14badb69142eeb736fbc, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -214,7 +214,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &4482037820237945874
+--- !u!114 &4089763944751999869
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -227,7 +227,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   beatImage: {fileID: 4126166575826736081}
-  beatFadeTargetAlpha: 0.5
 --- !u!114 &6883291628735403633
 MonoBehaviour:
   m_ObjectHideFlags: 0

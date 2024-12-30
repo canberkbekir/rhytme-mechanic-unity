@@ -6,48 +6,59 @@ namespace Base
 {
     public class BeatManager : MonoBehaviour
     {
-        // Events for beat synchronization
-        public event Action OnBeat;             // Fired on every beat
-        public event Action<int> OnBeatCount;   // Includes the beat count since the start
+        public event Action OnMusicStarted; 
+        public event Action OnMusicStopped; 
+        public event Action OnBeat;         
+        public event Action<int> OnBeatCount; 
 
         [Header("Beat Manager Settings")]
         [SerializeField, Tooltip("The Song Map to process beats from")]
         private SongMap songMap;
 
-        private float _currentSPB;       // Seconds per beat
-        private float _beatTimer;        // Accumulated time for the current beat
-        private int _beatCount;          // Total beats in current BeatMap
+        private AudioSource _audioSource;
+        private float _currentSPB;
+        private float _beatTimer;
+        private int _beatCount;
         private int _currentBeatMapIndex;
-        private bool _isRunning;         // Tracks whether the beat manager is active
+        private bool _isRunning;
 
+        public float SPB => _currentSPB;
+        public int BeatCount => _beatCount;
+        public float LastBeatTime { get; private set; }
+        public float NextBeatTime => LastBeatTime + _currentSPB;
 
-        #region Public Properties
-        public float SPB => _currentSPB; 
-        public int BeatCount => _beatCount; 
-        
-        #endregion
         private void Start()
         {
+            InitializeAudioSource();
             if (!ValidateSongMap()) return;
 
             Initialize();
-            Debug.Log("BeatManager initialized successfully.");
+            SetMusicState(true);
         }
 
         private void Update()
         {
             if (!_isRunning) return;
-
             UpdateBeatTimer();
         }
 
-        #region Initialization and Validation
+        private void InitializeAudioSource()
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = songMap?.song;
+            _audioSource.playOnAwake = false;
+        }
 
         private bool ValidateSongMap()
         {
             if (songMap == null || songMap.beats.Length == 0)
             {
                 Debug.LogError("No SongMap assigned or it has no BeatMaps!");
+                return false;
+            }
+            if (songMap.song == null)
+            {
+                Debug.LogError("SongMap has no audio clip assigned!");
                 return false;
             }
             return true;
@@ -58,11 +69,26 @@ namespace Base
             _isRunning = true;
             _currentBeatMapIndex = 0;
             LoadCurrentBeatMap();
+            _beatTimer = 0;
         }
 
-        #endregion
+        private void SetMusicState(bool isRunning)
+        {
+            _isRunning = isRunning;
 
-        #region Timer and Beat Updates
+            if (isRunning)
+            {
+                _audioSource.Play();
+                OnMusicStarted?.Invoke();
+                Debug.Log("Music started.");
+            }
+            else
+            {
+                _audioSource.Stop();
+                OnMusicStopped?.Invoke();
+                Debug.Log("Music stopped.");
+            }
+        }
 
         private void UpdateBeatTimer()
         {
@@ -72,26 +98,18 @@ namespace Base
             {
                 _beatTimer -= _currentSPB;
                 TriggerBeat();
-
-                if (_beatCount >= GetCurrentBeatMap().BeatCount)
-                {
-                    LoadNextBeatMap();
-                }
+                if (_beatCount >= GetCurrentBeatMap().BeatCount) LoadNextBeatMap();
             }
         }
 
         private void TriggerBeat()
         {
+            LastBeatTime = _audioSource.time;
             _beatCount++;
             OnBeat?.Invoke();
             OnBeatCount?.Invoke(_beatCount);
-
             Debug.Log($"Beat {_beatCount}");
         }
-
-        #endregion
-
-        #region BeatMap Handling
 
         private void LoadCurrentBeatMap()
         {
@@ -105,51 +123,17 @@ namespace Base
 
         private void LoadNextBeatMap()
         {
-            _currentBeatMapIndex++;
-
-            if (_currentBeatMapIndex < songMap.beats.Length)
+            if (++_currentBeatMapIndex < songMap.beats.Length)
             {
                 LoadCurrentBeatMap();
             }
             else
             {
-                FinishSong();
+                SetMusicState(false);
+                Debug.Log("Song and beats finished!");
             }
         }
 
         private BeatMap GetCurrentBeatMap() => songMap.beats[_currentBeatMapIndex];
-
-        private void FinishSong()
-        {
-            _isRunning = false;
-            Debug.Log("Song finished!");
-        }
-
-        #endregion
-
-        #region Public Controls
-
-        public void PauseBeats()
-        {
-            _isRunning = false;
-            Debug.Log("Beats paused.");
-        }
-
-        public void ResumeBeats()
-        {
-            if (!_isRunning)
-            {
-                _isRunning = true;
-                Debug.Log("Beats resumed.");
-            }
-        }
-
-        public void ResetBeats()
-        {
-            Initialize();
-            Debug.Log("Beats reset.");
-        }
-
-        #endregion
     }
 }

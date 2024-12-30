@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DefaultSongMap
   m_EditorClassIdentifier: 
   songName: Default Song
-  song: {fileID: 0}
+  song: {fileID: 8300000, guid: 337caa1e042c54a868d17f4fd2151417, type: 3}
   beats:
   - BeatCount: 100
     BeatInterval: 1
